@@ -3,10 +3,9 @@ from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import load_prompt
 import time
+import os
 
-# =========================================================
 # PAGE CONFIG
-# =========================================================
 
 st.set_page_config(
     page_title="AI Paper Decoder",
@@ -14,15 +13,18 @@ st.set_page_config(
     layout="wide"
 )
 
-# =========================================================
-# LOAD ENV VARIABLES
-# =========================================================
+# LOAD API KEY
 
-load_dotenv()
+try:
+    # Streamlit Cloud Secrets
+    google_api_key = st.secrets["GOOGLE_API_KEY"]
 
-# =========================================================
+except Exception:
+    # Local .env fallback
+    load_dotenv()
+    google_api_key = os.getenv("GOOGLE_API_KEY")
+
 # CUSTOM CSS
-# =========================================================
 
 st.markdown("""
 <style>
@@ -102,9 +104,7 @@ html, body, [class*="css"] {
 </style>
 """, unsafe_allow_html=True)
 
-# =========================================================
 # SIDEBAR
-# =========================================================
 
 with st.sidebar:
 
@@ -112,8 +112,9 @@ with st.sidebar:
 
     paper_input = st.selectbox(
         "📄 Select Research Paper",
-        
-         ["Attention Is All You Need",
+
+        [
+            "Attention Is All You Need",
             "BERT: Pre-training of Deep Bidirectional Transformers",
             "GPT-3: Language Models are Few-Shot Learners",
             "GPT-4 Technical Report",
@@ -123,9 +124,7 @@ with st.sidebar:
             "LoRA: Low-Rank Adaptation of Large Language Models",
             "Diffusion Models Beat GANs on Image Synthesis",
             "Denoising Diffusion Probabilistic Models"
-]           
-            
-        
+        ]
     )
 
     style_input = st.selectbox(
@@ -162,9 +161,8 @@ with st.sidebar:
 
     st.markdown("---")
 
-    # =========================================================
     # DEVELOPER CARD
-    # =========================================================
+    
 
     st.markdown("""
     <div class="creator-box">
@@ -201,9 +199,7 @@ with st.sidebar:
     🔗 [LinkedIn](https://www.linkedin.com/in/sachin-sharma-659ab53b6)
     """)
 
-# =========================================================
 # MAIN TITLE
-# =========================================================
 
 st.markdown(
     '<div class="main-title">🧠 AI Paper Decoder</div>',
@@ -215,24 +211,19 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# =========================================================
-# MODEL
-# =========================================================
+# LOAD MODEL
 
 model = ChatGoogleGenerativeAI(
     model="gemini-2.5-flash",
+    google_api_key=google_api_key,
     temperature=temperature
 )
 
-# =========================================================
 # LOAD PROMPT
-# =========================================================
 
 template = load_prompt("template.json")
 
-# =========================================================
 # GENERATE BUTTON
-# =========================================================
 
 if st.button("🚀 Decode Research Paper"):
 
@@ -252,12 +243,10 @@ if st.button("🚀 Decode Research Paper"):
 
             st.success("✅ Explanation Generated Successfully!")
 
-            # =========================================================
             # DIFFICULTY INDICATOR
-            # =========================================================
 
             difficulty_map = {
-                
+
                 "Attention Is All You Need": "🔴 Advanced",
                 "BERT: Pre-training of Deep Bidirectional Transformers": "🟠 Intermediate",
                 "GPT-3: Language Models are Few-Shot Learners": "🔴 Advanced",
@@ -275,9 +264,7 @@ if st.button("🚀 Decode Research Paper"):
                 f"### 📊 Paper Difficulty: {difficulty_map.get(paper_input)}"
             )
 
-            # =========================================================
             # RESULT SECTION
-            # =========================================================
 
             st.markdown(
                 '<div class="section-title">📖 AI Explanation</div>',
@@ -293,9 +280,7 @@ if st.button("🚀 Decode Research Paper"):
                 unsafe_allow_html=True
             )
 
-            # =========================================================
             # DOWNLOAD BUTTON
-            # =========================================================
 
             st.download_button(
                 label="📥 Download Explanation",
@@ -304,27 +289,23 @@ if st.button("🚀 Decode Research Paper"):
                 mime="text/plain"
             )
 
-            # =========================================================
             # EXPANDABLE PAPER INFO
-            # =========================================================
 
             with st.expander("📌 Research Paper Details"):
 
-                st.write(f"### 📄 Selected Paper")
+                st.write("### 📄 Selected Paper")
                 st.write(paper_input)
 
-                st.write(f"### 🧠 Explanation Style")
+                st.write("### 🧠 Explanation Style")
                 st.write(style_input)
 
-                st.write(f"### 📚 Explanation Length")
+                st.write("### 📚 Explanation Length")
                 st.write(length_input)
 
-                st.write(f"### 🎨 Creativity Level")
+                st.write("### 🎨 Creativity Level")
                 st.write(temperature)
 
-            # =========================================================
             # WHY THIS PAPER MATTERS
-            # =========================================================
 
             with st.expander("🚀 Why This Paper Matters"):
 
@@ -343,9 +324,7 @@ if st.button("🚀 Decode Research Paper"):
 
             st.error(f"❌ Error: {e}")
 
-# =========================================================
 # FOOTER
-# =========================================================
 
 st.markdown("---")
 
